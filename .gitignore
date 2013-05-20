@@ -1,9 +1,13 @@
+# Engine stuff #
+*.conf
+
+# Java stuff #
 *.class
 
 # Eclipse stuff #
 .metadata/
 
-# OS generated files #
+# OS stuff #
 .DS_Store
 .DS_Store?
 ._*
