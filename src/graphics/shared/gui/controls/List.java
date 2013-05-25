@@ -28,8 +28,8 @@ public class List extends Control<List.ListItem.Events> {
     _events = new List.ListItem.Events(this);
     
     _scroll = new Scrollbar(gui);
-    _scroll.events().onScroll(new Scrollbar.Events.Scroll() {
-      public void event(int delta) {
+    _scroll.events().addChangeHandler(new Scrollbar.Events.Change() {
+      public void change(int delta) {
         _start -= delta;
       }
     });
@@ -70,8 +70,8 @@ public class List extends Control<List.ListItem.Events> {
   public ListItem addItem(final ListItem l) {
     l._index = _items.size();
     l.setXYWH(0, _items.size() * 41, _loc[2] - 16, 40);
-    l.events().onSelect(new ListItem.Events.Select() {
-      public void event() {
+    l.events().addSelectHandler(new ListItem.Events.Select() {
+      public void select() {
         handleSelect(l);
       }
     });
@@ -121,7 +121,7 @@ public class List extends Control<List.ListItem.Events> {
   
   protected void drawEnd() {
     if(_visible) {
-      ((Events)_events).raiseDraw();
+      _events.raiseDraw();
       
       _controlList.draw();
       _matrix.pop();
@@ -218,7 +218,7 @@ public class List extends Control<List.ListItem.Events> {
     }
   }
   
-  public void handleSelect(ListItem l) {
+  private void handleSelect(ListItem l) {
     _selected = l;
     _events.raiseSelect(l);
   }
@@ -380,13 +380,13 @@ public class List extends Control<List.ListItem.Events> {
     }
     
     public void handleSelect() {
-      ((Events)_events).raiseSelect(this);
+      _events.raiseSelect(this);
     }
     
     public static class Events extends Control.Events {
       private LinkedList<Select> _select = new LinkedList<Select>();
       
-      public void onSelect(Select e) { _select.add(e); }
+      public void addSelectHandler(Select e) { _select.add(e); }
       
       protected Events(Control<?> c) {
         super(c);
@@ -395,12 +395,12 @@ public class List extends Control<List.ListItem.Events> {
       public void raiseSelect(ListItem i) {
         for(Select e : _select) {
           e.setControl(i);
-          e.event();
+          e.select();
         }
       }
       
       public static abstract class Select extends Event {
-        public abstract void event();
+        public abstract void select();
       }
     }
   }

@@ -39,7 +39,7 @@ public class GUIs {
   
   public void logic() {
     for(GUI gui : _gui) {
-      if(!gui.logicGUI()) break;
+      if(gui.logicGUI()) break;
     }
   }
   
@@ -88,30 +88,6 @@ public class GUIs {
   public void charDown(char c) {
     for(GUI gui : _gui) {
       if(gui.charDown(c)) break;
-    }
-  }
-  
-  public void axisLeft(double angle, float x, float y) {
-    for(GUI gui : _gui) {
-      if(gui.axisLeft(angle, x, y)) break;
-    }
-  }
-  
-  public void axisRight(double angle, float x, float y) {
-    for(GUI gui : _gui) {
-      if(gui.axisRight(angle, x, y)) break;
-    }
-  }
-  
-  public void buttonDown(int button) {
-    for(GUI gui : _gui) {
-      if(gui.buttonDown(button)) break;
-    }
-  }
-  
-  public void buttonUp(int button) {
-    for(GUI gui : _gui) {
-      if(gui.buttonUp(button)) break;
     }
   }
 }

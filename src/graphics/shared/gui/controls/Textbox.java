@@ -55,14 +55,16 @@ public class Textbox extends Control<Textbox.Events> {
     _sel.setVisible(false);
     _sel.setH(_font.getH());
     
-    _events.onMouseDown(new Events.Mouse() {
-      public void event(int x, int y, int button) {
+    _events.addMouseHandler(new Events.Mouse() {
+      public void down(int x, int y, int button) {
         setCaretPos(getCharAtX(x));
       }
-    });
-    
-    _events.onMouseMove(new Events.Mouse() {
-      public void event(int x, int y, int button) {
+      
+      public void up(int x, int y, int button) {
+        
+      }
+      
+      public void move(int x, int y, int button) {
         if(button == 0) {
           int end = getCharAtX(x);
           
@@ -89,20 +91,13 @@ public class Textbox extends Control<Textbox.Events> {
       }
     });
     
-    _events.onMouseEnter(new Events.Hover() {
-      public void event() {
-        _hover = true;
-      }
+    _events.addHoverHandler(new Events.Hover() {
+      public void enter() { _hover = true;  }
+      public void leave() { _hover = false; }
     });
     
-    _events.onMouseLeave(new Events.Hover() {
-      public void event() {
-        _hover = false;
-      }
-    });
-    
-    _events.onKeyDown(new Events.Key() {
-      public void event(int key) {
+    _events.addKeyHandler(new Events.Key() {
+      public void down(int key) {
         switch(key) {
           case Keyboard.KEY_LSHIFT:
           case Keyboard.KEY_RSHIFT:
@@ -170,20 +165,16 @@ public class Textbox extends Control<Textbox.Events> {
             break;
         }
       }
-    });
-    
-    _events.onKeyUp(new Events.Key() {
-      public void event(int key) {
+      
+      public void up(int key) {
         switch(key) {
           case Keyboard.KEY_LSHIFT:
           case Keyboard.KEY_RSHIFT:
             _shiftDown = false;
         }
       }
-    });
-    
-    _events.onCharDown(new Events.Char() {
-      public void event(char key) {
+      
+      public void text(char key) {
         if(_editable) {
           if(_numeric) {
             if(key < 0x30 || key > 0x39) {
@@ -203,8 +194,9 @@ public class Textbox extends Control<Textbox.Events> {
       }
     });
     
-    _events.onGotFocus(new Events.Focus() {
-      public void event() {
+    _events.addFocusHandler(new Events.Focus() {
+      public void lost() { }
+      public void got() {
         _caretAlpha = 1;
       }
     });
@@ -410,7 +402,7 @@ public class Textbox extends Control<Textbox.Events> {
   public static class Events extends Control.Events {
     private LinkedList<Change> _change = new LinkedList<Change>();
     
-    public void onChange(Change e) { _change.add(e); }
+    public void addChangeHandler(Change e) { _change.add(e); }
     
     protected Events(Control<?> c) {
       super(c);
@@ -419,12 +411,12 @@ public class Textbox extends Control<Textbox.Events> {
     public void raiseChange() {
       for(Change e : _change) {
         e.setControl(_control);
-        e.event();
+        e.change();
       }
     }
     
     public static abstract class Change extends Event {
-      public abstract void event();
+      public abstract void change();
     }
   }
 }

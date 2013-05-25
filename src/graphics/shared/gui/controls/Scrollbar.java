@@ -18,22 +18,8 @@ public class Scrollbar extends Control<Scrollbar.Events> {
   public Scrollbar(GUI gui, Theme theme) {
     super(gui);
     
-    _events = new Events(this);
-    
-    Events.Click up = new Events.Click() {
-      public void event() {
-        if(_val > _min) setVal(_val - 1);
-      }
-    };
-    
-    Events.Click down = new Events.Click() {
-      public void event() {
-        if(_val < _max) setVal(_val + 1);
-      }
-    };
-    
-    Events.Wheel wheel = new Events.Wheel() {
-      public void event(int delta) {
+    Control.Events.Scroll scroll = new Control.Events.Scroll() {
+      public void scroll(int delta) {
         while(delta > 0) {
           delta -= 120;
           _up.handleMouseUp(0, 0, 0);
@@ -46,17 +32,22 @@ public class Scrollbar extends Control<Scrollbar.Events> {
       }
     };
     
-    _events.onMouseWheel(wheel);
+    _events = new Events(this);
+    _events.addScrollHandler(scroll);
     
     _up = new Button(gui, theme);
-    _up.events().onClick(up);
-    _up.events().onDoubleClick(up);
-    _up.events().onMouseWheel(wheel);
+    _up.events().addScrollHandler(scroll);
+    _up.events().addClickHandler(new Events.Click() {
+      public void click()    { if(_val > _min) setVal(_val - 1); }
+      public void clickDbl() { click(); }
+    });
     
     _down = new Button(gui, theme);
-    _down.events().onClick(down);
-    _down.events().onDoubleClick(down);
-    _down.events().onMouseWheel(wheel);
+    _down.events().addScrollHandler(scroll);
+    _down.events().addClickHandler(new Events.Click() {
+      public void click()    { if(_val < _max) setVal(_val + 1); }
+      public void clickDbl() { click(); }
+    });
     
     Controls().add(_up);
     Controls().add(_down);
@@ -86,7 +77,7 @@ public class Scrollbar extends Control<Scrollbar.Events> {
     if(_val != val) {
       int delta = val - _val;
       _val = val;
-      _events.raiseScroll(delta);
+      _events.raiseChange(delta);
     }
   }
   
@@ -119,23 +110,23 @@ public class Scrollbar extends Control<Scrollbar.Events> {
   }
   
   public static class Events extends Control.Events {
-    private LinkedList<Scroll> _scroll = new LinkedList<Scroll>();
+    private LinkedList<Change> _change = new LinkedList<Change>();
     
-    public void onScroll(Scroll e) { _scroll.add(e); }
+    public void addChangeHandler(Change e) { _change.add(e); }
     
     protected Events(Control<?> c) {
       super(c);
     }
     
-    protected void raiseScroll(int delta) {
-      for(Scroll e : _scroll) {
+    protected void raiseChange(int delta) {
+      for(Change e : _change) {
         e.setControl(_control);
-        e.event(delta);
+        e.change(delta);
       }
     }
     
-    public static abstract class Scroll extends Event {
-      public abstract void event(int delta);
+    public static abstract class Change extends Event {
+      public abstract void change(int delta);
     }
   }
   

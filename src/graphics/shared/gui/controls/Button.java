@@ -29,30 +29,18 @@ public class Button extends Control<Control.Events> {
   public Button(GUI gui, final Theme theme) {
     super(gui);
     
-    _events = new Control.Events(this);
-    
     _acceptsFocus = false;
     
-    _events.onMouseEnter(new Events.Hover() {
-      public void event() {
-        _hover = true;
-      }
+    _events = new Control.Events(this);
+    _events.addClickHandler(new Events.Click() {
+      public void click()    { _click = 1; }
+      public void clickDbl() { click(); }
     });
     
-    _events.onMouseLeave(new Events.Hover() {
-      public void event() {
-        _hover = false;
-      }
+    _events.addHoverHandler(new Events.Hover() {
+      public void enter() { _hover = true;  }
+      public void leave() { _hover = false; }
     });
-    
-    Events.Click click = new Events.Click() {
-      public void event() {
-        _click = 1;
-      }
-    };
-    
-    _events.onClick(click);
-    _events.onDoubleClick(click);
     
     theme.create(this);
   }

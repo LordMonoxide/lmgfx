@@ -42,30 +42,27 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
     super(gui, theme);
     
     _events = new Events(this);
-    _events.onMouseEnter(new Events.Hover() {
-      public void event() {
-        _hover = true;
-      }
-    });
-    
-    _events.onMouseLeave(new Events.Hover() {
-      public void event() {
-        _hover = false;
-      }
-    });
-    
-    Events.Click click = new Events.Click() {
-      public void event() {
+    _events.addClickHandler(new Events.Click() {
+      public void click() {
         _btnDrop.handleMouseDown(0, 0, 0);
         _btnDrop.handleMouseUp(0, 0, 0);
       }
-    };
+      
+      public void clickDbl() {
+        click();
+      }
+    });
     
-    _events.onClick(click);
-    _events.onDoubleClick(click);
+    _events.addHoverHandler(new Events.Hover() {
+      public void enter() { _hover = true;  }
+      public void leave() { _hover = false; }
+    });
     
-    Events.Click btnDropClick = new Events.Click() {
-      public void event() {
+    _btnDrop = new Button(gui, theme);
+    _btnDrop.setText("\u25BC");
+    _btnDrop.events().addClickHandler(new Events.Click() {
+      public void clickDbl() { }
+      public void click() {
         if(!_picDrop.getVisible()) {
           if(_text.size() != 0) {
             _selectedIndex = _textIndex;
@@ -79,17 +76,12 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
           _drop.pop();
         }
       }
-    };
-    
-    _btnDrop = new Button(gui, theme);
-    _btnDrop.setText("\u25BC");
-    _btnDrop.events().onClick(btnDropClick);
-    _btnDrop.events().onDoubleClick(btnDropClick);
+    });
     
     _picDrop = new Picture(gui, true);
     _picDrop.setVisible(false);
-    _picDrop.events().onDraw(new Events.Draw() {
-      public void event() {
+    _picDrop.events().addDrawHandler(new Events.Draw() {
+      public void draw() {
         if(_selectedIndex != -1) {
           _selected.draw();
         }
@@ -101,14 +93,19 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
         }
       }
     });
-    _picDrop.events().onMouseMove(new Events.Mouse() {
-      public void event(int x, int y, int button) {
+    
+    _picDrop.events().addMouseHandler(new Events.Mouse() {
+      public void down(int x, int y, int button) { }
+      public void up(int x, int y, int button) { }
+      public void move(int x, int y, int button) {
         _selectedIndex = (y - 1) / _font.getH();
         _selected.setY(_selectedIndex * _font.getH());
       }
     });
-    _picDrop.events().onClick(new Events.Click() {
-      public void event() {
+    
+    _picDrop.events().addClickHandler(new Events.Click() {
+      public void clickDbl() { }
+      public void click() {
         _btnDrop.handleMouseDown(0, 0, 0);
         _btnDrop.handleMouseUp(0, 0, 0);
         setSeletected(_selectedIndex);
@@ -248,7 +245,7 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
   public static class Events extends Control.Events {
     private LinkedList<Select> _select = new LinkedList<Select>();
     
-    public void onSelect(Select e) { _select.add(e); }
+    public void addSelectHandler(Select e) { _select.add(e); }
     
     protected Events(Control<?> c) {
       super(c);
@@ -257,12 +254,12 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
     public void raiseSelect(Item l) {
       for(Select e : _select) {
         e.setControl(_control);
-        e.event(l);
+        e.select(l);
       }
     }
     
     public static abstract class Select extends Event {
-      public abstract void event(Item item);
+      public abstract void select(Item item);
     }
   }
   
@@ -283,6 +280,14 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
     
     public void resize() {
       
+    }
+    
+    public void draw() {
+      
+    }
+    
+    public boolean logic() {
+      return false;
     }
     
     public boolean handleMouseDown(int x, int y, int button) {

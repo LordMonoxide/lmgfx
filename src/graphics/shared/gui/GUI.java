@@ -69,9 +69,8 @@ public abstract class GUI {
   public abstract void load();
   public abstract void destroy();
   public abstract void resize();
-  
-  public boolean logic() { return true;  }  
-  public boolean draw()  { return false; }
+  public abstract void draw();
+  public abstract boolean logic();
   
   public final boolean logicGUI() {
     Boolean b = logic();
@@ -79,10 +78,9 @@ public abstract class GUI {
     return b;
   }
   
-  public final boolean drawGUI() {
-    Boolean b = draw();
+  public final void drawGUI() {
+    draw();
     drawControls();
-    return b;
   }
   
   protected final void drawSelect() {
@@ -263,38 +261,6 @@ public abstract class GUI {
     return handleCharDown(key);
   }
   
-  public final boolean axisLeft(double angle, float x, float y) {
-    if(_focus != null) {
-      _focus.handleAxisLeft(angle, x, y);
-    }
-    
-    return handleAxisLeft(angle, x, y);
-  }
-  
-  public final boolean axisRight(double angle, float x, float y) {
-    if(_focus != null) {
-      _focus.handleAxisRight(angle, x, y);
-    }
-    
-    return handleAxisRight(angle, x, y);
-  }
-  
-  public final boolean buttonDown(int button) {
-    if(_focus != null) {
-      _focus.handleButtonDown(button);
-    }
-    
-    return handleButtonDown(button);
-  }
-  
-  public final boolean buttonUp(int button) {
-    if(_focus != null) {
-      _focus.handleButtonUp(button);
-    }
-    
-    return handleButtonUp(button);
-  }
-  
   public boolean handleMouseDown (int x, int y, int button) { return false; }
   public boolean handleMouseUp   (int x, int y, int button) { return false; }
   public boolean handleMouseMove (int x, int y, int button) { return false; }
@@ -302,8 +268,4 @@ public abstract class GUI {
   public boolean handleKeyDown   (int key)  { return false; }
   public boolean handleKeyUp     (int key)  { return false; }
   public boolean handleCharDown  (char key) { return false; }
-  public boolean handleAxisLeft  (double angle, float x, float y) { return false; }
-  public boolean handleAxisRight (double angle, float x, float y) { return false; }
-  public boolean handleButtonDown(int button) { return false; }
-  public boolean handleButtonUp  (int button) { return false; }
 }

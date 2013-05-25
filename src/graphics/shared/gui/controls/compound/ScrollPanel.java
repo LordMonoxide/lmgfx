@@ -10,7 +10,6 @@ import graphics.shared.gui.controls.Button;
 import graphics.shared.gui.controls.Label;
 import graphics.shared.gui.controls.Picture;
 import graphics.shared.gui.controls.Scrollbar;
-import graphics.shared.gui.controls.Scrollbar.Events.Scroll;
 
 public class ScrollPanel extends Control<ScrollPanel.Events> {
   private ArrayList<Item> _item = new ArrayList<Item>();
@@ -28,38 +27,31 @@ public class ScrollPanel extends Control<ScrollPanel.Events> {
   public ScrollPanel(GUI gui) {
     super(gui);
     
-    _events = new Events(this);
-    
-    Events.Wheel wheel = new Events.Wheel() {
-      public void event(int delta) {
+    Events.Scroll scroll = new Events.Scroll() {
+      public void scroll(int delta) {
         if(_scroll.getEnabled()) {
           _scroll.handleMouseWheel(delta);
         }
       }
     };
     
-    Events.Click addClick = new Events.Click() {
-      public void event() {
-        _events.raiseButtonAdd();
-      }
-    };
-    
-    Events.Click delClick = new Events.Click() {
-      public void event() {
-        _events.raiseButtonDel();
-      }
-    };
+    _events = new Events(this);
+    _events.addScrollHandler(scroll);
     
     _add = new Button(gui);
     _add.setText("Add");
-    _add.events().onClick(addClick);
-    _add.events().onDoubleClick(addClick);
+    _add.events().addClickHandler(new Events.Click() {
+      public void click() { _events.raiseButtonAdd(); }
+      public void clickDbl() { click(); }
+    });
     
     _del = new Button(gui);
     _del.setText("Delete");
     _del.setX(_add.getW());
-    _del.events().onClick(delClick);
-    _del.events().onDoubleClick(delClick);
+    _del.events().addClickHandler(new Events.Click() {
+      public void click() { _events.raiseButtonDel(); }
+      public void clickDbl() { click(); }
+    });
     
     _tabs = new Picture(gui);
     _tabs.setH(_add.getH());
@@ -67,13 +59,13 @@ public class ScrollPanel extends Control<ScrollPanel.Events> {
     _panel = new Picture(gui);
     _panel.setY(_tabs.getH());
     _panel.setBackColour(new float[] {0.33f, 0.33f, 0.33f, 0.66f});
-    _panel.events().onMouseWheel(wheel);
+    _panel.events().addScrollHandler(scroll);
     
     _scroll = new Scrollbar(gui);
     _scroll.setY(_panel.getY());
     _scroll.setH(88);
-    _scroll.events().onScroll(new Scroll() {
-      public void event(int delta) {
+    _scroll.events().addChangeHandler(new Scrollbar.Events.Change() {
+      public void change(int delta) {
         setItem(_scroll.getVal());
       }
     });
@@ -93,8 +85,6 @@ public class ScrollPanel extends Control<ScrollPanel.Events> {
     super.Controls().add(_panel);
     super.Controls().add(_scroll);
     super.Controls().add(_num);
-    
-    _events.onMouseWheel(wheel);
     
     setWH(400, 100);
     
