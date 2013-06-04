@@ -68,12 +68,20 @@ public class List extends Control<List.ListItem.Events> {
   }
   
   public ListItem addItem(final ListItem l) {
+    final List _this = this;
+    
     l._index = _items.size();
     l.setXYWH(0, _items.size() * 41, _loc[2] - 16, 40);
     l.events().addSelectHandler(new ListItem.Events.Select() {
       public void select() {
         handleSelect(l);
       }
+    });
+    
+    l.events().addKeyHandler(new Control.Events.Key() {
+      public void down( int key) { _this.events().raiseKeyDown(key); }
+      public void up  ( int key) { _this.events().raiseKeyUp(key); }
+      public void text(char key) { _this.events().raiseKeyText(key); }
     });
     
     _items.add(l);
