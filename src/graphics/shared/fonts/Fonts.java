@@ -13,6 +13,7 @@ import graphics.gl00.Context;
 import graphics.shared.textures.Texture;
 import graphics.shared.textures.Textures;
 import graphics.themes.Theme;
+import graphics.util.Math;
 
 public class Fonts {
   private static Fonts _instance = new Fonts();
@@ -32,14 +33,11 @@ public class Fonts {
     return _default;
   }
   
-  private FontRenderContext _rendCont;
   private java.awt.Font _font;
+  private FontRenderContext _rendCont;
   
-  private ArrayList<GlyphMetrics> _metrics;
-  private Glyph[] _glyph;
+  private ArrayList<Metrics> _metrics;
   
-  private int _w,  _h;
-  private int _w2, _h2;
   private int _highIndex;
   
   public Font getFont(String name, int size) {
@@ -54,12 +52,10 @@ public class Fonts {
     
     FontMetrics fm = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE).getGraphics().getFontMetrics(_font);
     
-    int start = 0x20;
-    int end = 0x3FF;
-    _w = 0; _h = 0;
-    _w2 = 0; _h2 = 0;
+    _metrics = new ArrayList<Metrics>();
     
-    _metrics = new ArrayList<GlyphMetrics>();
+    int start = 0x20;
+    int end   = 0x3FF;
     
     for(int i = start; i <= end; i++) {
       addGlyph(i);
@@ -70,37 +66,53 @@ public class Fonts {
     addGlyph(0x25BC); // Triangle down
     addGlyph(0x25C4); // Triangle left
     
-    _w2 = graphics.util.Math.nextPowerOfTwo(_w);
-    byte[] b = new byte[(_w2 - _w) * 4];
-    
-    ByteBuffer buffer = ByteBuffer.allocateDirect(_w2 * _h * 4);
-    
-    for(int y = 0; y < _h2; y++) {
-      for(GlyphMetrics glyph : _metrics) {
-        buffer.put(glyph.getRow());
-      }
-      
-      buffer.put(b);
-    }
-    
-    buffer.position(0);
-    
-    Texture texture = _textures.getTexture("Font." + _font.getFontName() + "." + _font.getSize(), _w2, _h, buffer);
-    
     int x = 0;
     int y = 0;
+    int w = 512;
+    int h = 512;
     
-    _glyph = new Glyph[_highIndex + 1];
-    for(GlyphMetrics glyph : _metrics) {
-      _glyph[glyph.getCode()] = new Glyph(x, y, fm.charWidth(glyph.getCode()), glyph.getH(), glyph.getW2(), glyph.getH2(), texture);
-      x += glyph.getW2();
+    Font.Glyph[] glyph = new Font.Glyph[_highIndex + 1];
+    
+    byte[] data = new byte[w * h * 4];
+    for(Metrics m : _metrics) {
+      if(x + m.w2 > w) {
+        x = 0;
+        y += m.h2;
+      }
+      
+      int i1 = (y * w * 4) + x * 4;
+      int i2 = 0;
+      
+      for(int n = 0; n < m.h; n++) {
+        System.arraycopy(m.argb, i2, data, i1, m.w * 4);
+        
+        i1 += w * 4;
+        i2 += m.w * 4;
+      }
+      
+      Font.Glyph g = new Font.Glyph();
+      g.w = fm.charWidth(m.code);
+      g.h = m.h;
+      g.tx = x;
+      g.ty = y;
+      g.tw = m.w2;
+      g.th = m.h2;
+      glyph[m.code] = g;
+      
+      x += m.w2;
     }
     
-    Font f = new Font(_h2, _glyph);
+    ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
+    buffer.put(data);
+    buffer.position(0);
+    
+    Texture texture = _textures.getTexture("Font." + _font.getFontName() + "." + _font.getSize(), w, h, buffer);
+    
+    Font f = new Font(_metrics.get(0).h, glyph);
     f.setTexture(texture);
     _fonts.put(fullName, f);
     
-    System.out.println("Font \"" + fullName + "\" created (" + _w2 + "x" + _h + ").");
+    System.out.println("Font \"" + fullName + "\" created (" + w + "x" + h + ").");
     
     return f;
   }
@@ -131,15 +143,22 @@ public class Fonts {
       argbByte[n] = (byte)argb[n];
     }
     
-    GlyphMetrics glyphMetric = new GlyphMetrics(i, (int)bounds.getWidth(), (int)bounds.getHeight(), argbByte);
-    _metrics.add(glyphMetric);
+    Metrics m = new Metrics();
+    m.code = i;
+    m.w = (int)bounds.getWidth();
+    m.h = (int)bounds.getHeight();
+    m.w2 = Math.nextPowerOfTwo(m.w);
+    m.h2 = Math.nextPowerOfTwo(m.h);
+    m.argb = argbByte;
+    _metrics.add(m);
     
     if(i > _highIndex) _highIndex = i;
-    
-    _w += glyphMetric.getW2();
-    if(glyphMetric.getH() > _h2) {
-      _h = glyphMetric.getH2();
-      _h2 = glyphMetric.getH();
-    }
+  }
+  
+  private class Metrics {
+    private int code;
+    private int w, h;
+    private int w2, h2;
+    private byte[] argb;
   }
 }
