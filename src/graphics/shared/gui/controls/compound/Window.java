@@ -138,8 +138,13 @@ public class Window extends Control<Window.Events> {
       b.setX(b.getX() + button.getW());
     }
     
+    _buttons.setX(_buttons.getX() - button.getW());
     _buttons.setW(_buttons.getW() + button.getW());
     _buttons.Controls().add(button);
+    _button.add(button);
+    
+    resize();
+    
     return button;
   }
   
