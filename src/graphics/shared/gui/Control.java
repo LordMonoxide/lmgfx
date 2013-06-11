@@ -135,9 +135,9 @@ public class Control<T> {
   public void setX(float x)                         { _loc[0] = x; }
   public void setY(float y)                         { _loc[1] = y; }
   public void setEnabled(boolean enabled)           { _enabled = enabled; }
-  public void setBackColour(float[] c)              { _background.setColour(c); }
+  public void setBackColour(float[] c)              { _background.setColour(c); _background.createQuad(); }
   public void setForeColour(float[] c)              { _foreColour = c; }
-  public void setBorderColour(float[] c)            { _border.setColour(c); }
+  public void setBorderColour(float[] c)            { _border.setColour(c); _border.createBorder(); }
   public void setAcceptsFocus(boolean acceptsFocus) { _acceptsFocus = acceptsFocus; }
   
   public void setXY(float x, float y) {
