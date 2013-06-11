@@ -108,6 +108,18 @@ public class Window extends Control<Window.Events> {
     return _panels.getH();
   }
   
+  public void setClientW(float w) {
+    setW(w);
+  }
+  
+  public void setClientH(float h) {
+    setH(h + _title.getH());
+  }
+  
+  public void setClientWH(float w, float h) {
+    setWH(w, h + _title.getH());
+  }
+  
   public String getText() {
     return _text.getText();
   }
