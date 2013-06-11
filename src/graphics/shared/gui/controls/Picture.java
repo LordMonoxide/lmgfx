@@ -20,12 +20,6 @@ public class Picture extends Control<Control.Events> {
     _background.createQuad();
   }
   
-  public void setBackColour(float[] c) {
-    super.setBackColour(c);
-    _background.setColour(c);
-    _background.createQuad();
-  }
-  
   public Texture getTexture() {
     return _background.getTexture();
   }
