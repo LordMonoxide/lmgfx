@@ -299,10 +299,6 @@ public class Control<T> {
         _background.draw();
       }
       
-      if(_border.getColour() != null) {
-        _border.draw();
-      }
-      
       return true;
     }
     
@@ -314,6 +310,11 @@ public class Control<T> {
       ((Events)_events).raiseDraw();
       
       _controlList.draw();
+      
+      if(_border.getColour() != null) {
+        _border.draw();
+      }
+      
       _matrix.pop();
     }
     
