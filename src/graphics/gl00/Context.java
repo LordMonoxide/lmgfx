@@ -96,6 +96,8 @@ public abstract class Context {
   public     int   getH()          { return _h;          }
   public     int   getFPSTarget()  { return _fpsTarget;  }
   public   float[] getBackColour() { return _backColour; }
+  public     int   getMouseX()     { return Mouse.getX(); }
+  public     int   getMouseY()     { return _h - Mouse.getY(); }
   
   public    void   setCameraX(float cameraX) { _cameraX = cameraX; }
   public    void   setCameraY(float cameraY) { _cameraY = cameraY; }
