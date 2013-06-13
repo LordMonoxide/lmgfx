@@ -18,4 +18,14 @@ public class Math {
   public static int nextPowerOfTwo(double number) {
     return nextPowerOfTwo(java.lang.Math.round(number));
   }
+  
+  public static boolean inBox(int mouseX, int mouseY, int x, int y, int w, int h) {
+    if(mouseX >= x && mouseX <= x + w) {
+      if(mouseY >= y && mouseY <= y + h) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
 }
