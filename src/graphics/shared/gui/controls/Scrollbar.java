@@ -16,7 +16,7 @@ public class Scrollbar extends Control<Scrollbar.Events> {
   }
   
   public Scrollbar(GUI gui, Theme theme) {
-    super(gui);
+    super(gui, theme);
     
     Control.Events.Scroll scroll = new Control.Events.Scroll() {
       public void scroll(int delta) {

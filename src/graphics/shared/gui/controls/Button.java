@@ -27,7 +27,7 @@ public class Button extends Control<Control.Events> {
   }
   
   public Button(GUI gui, final Theme theme) {
-    super(gui);
+    super(gui, theme);
     
     _acceptsFocus = false;
     

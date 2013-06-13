@@ -20,7 +20,7 @@ public class Label extends Control<Control.Events> {
   }
   
   public Label(GUI gui, Theme theme) {
-    super(gui, false);
+    super(gui, theme, false);
     _events = new Control.Events(this);
     setAcceptsFocus(false);
     theme.create(this);

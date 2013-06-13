@@ -23,7 +23,7 @@ public class List extends Control<List.ListItem.Events> {
   }
   
   public List(GUI gui, Theme theme) {
-    super(gui);
+    super(gui, theme);
     
     _events = new List.ListItem.Events(this);
     

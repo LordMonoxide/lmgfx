@@ -42,7 +42,7 @@ public class Textbox extends Control<Textbox.Events> {
   }
   
   public Textbox(GUI gui, Theme theme) {
-    super(gui, true);
+    super(gui, theme);
     
     _events = new Events(this);
     
