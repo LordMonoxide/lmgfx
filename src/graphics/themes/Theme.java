@@ -6,6 +6,7 @@ import graphics.shared.gui.controls.Button;
 import graphics.shared.gui.controls.Dropdown;
 import graphics.shared.gui.controls.Label;
 import graphics.shared.gui.controls.List;
+import graphics.shared.gui.controls.Menu;
 import graphics.shared.gui.controls.Picture;
 import graphics.shared.gui.controls.Scrollbar;
 import graphics.shared.gui.controls.Textbox;
@@ -63,6 +64,13 @@ public class Theme {
   public void create(List c) {
     c.setBackColour(new float[] {0.2f, 0.2f, 0.2f, 1});
     c.setWH(200, 80);
+  }
+  
+  public void create(Menu c) {
+    c.setBackColour(new float[] {0.2f, 0.2f, 0.2f, 1});
+    c.setForeColour(new float[] {1, 1, 1, 1});
+    c.setBorderColour(new float[] {0, 0, 0, 1});
+    c.setWH(150, 300);
   }
   
   public void create(Scrollbar c) {
