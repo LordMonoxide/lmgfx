@@ -3,6 +3,7 @@ package graphics.themes;
 import graphics.gl00.Context;
 import graphics.gl00.Scalable;
 import graphics.shared.gui.controls.Button;
+import graphics.shared.gui.controls.Checkbox;
 import graphics.shared.gui.controls.Dropdown;
 import graphics.shared.gui.controls.Label;
 import graphics.shared.gui.controls.List;
@@ -44,6 +45,24 @@ public class Theme {
     c.setForeColour(new float[] {1, 1, 1, 1});
     c.setWH(90, 20);
     c.setText("Button");
+  }
+  
+  public void create(Checkbox c) {
+    Scalable s = Context.newScalable();
+    s.setTexture(_textures.getTexture("gui/button.png"));
+    s.setSize(
+        new float[] {2, 2, 2, 2},
+        new float[] {2, 2, 2, 2},
+        5, 5, 1
+    );
+    
+    c.setBackground(s);
+    c.setBackColour(new float[] {0.2f, 0.2f, 0.2f, 1});
+    c.setGlowColour(new float[] {0.3f, 0.3f, 0.3f, 1});
+    c.setClickColour(new float[] {0x3F / 255f, 0xCF / 255f, 0, 1});
+    c.setForeColour(new float[] {1, 1, 1, 1});
+    c.setWH(90, 20);
+    c.setText("Checkbox");
   }
   
   public void create(Dropdown c) {
