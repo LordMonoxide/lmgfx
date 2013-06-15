@@ -129,7 +129,6 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
   public void clear() {
     _text.clear();
     _textIndex = -1;
-    _selected = null;
     _selectedIndex = -1;
   }
   
