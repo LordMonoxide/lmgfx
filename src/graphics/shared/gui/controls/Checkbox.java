@@ -166,7 +166,7 @@ public class Checkbox extends Control<Checkbox.Events> {
   public static class Events extends Control.Events {
     private LinkedList<Checked> _checked = new LinkedList<Checked>();
     
-    public void addChangeHandler(Checked e) { _checked.add(e); }
+    public void addCheckHandler(Checked e) { _checked.add(e); }
     
     protected Events(Control<?> c) {
       super(c);
