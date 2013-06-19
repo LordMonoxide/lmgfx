@@ -74,6 +74,8 @@ public abstract class Context {
   private int _mouseY = 0;
   private int _mouseButton = -1;
   
+  private CursorCallback _cursor;
+  
   private int _w = 1280, _h = 720;
   private int _fpsTarget = 60;
   
@@ -114,6 +116,14 @@ public abstract class Context {
     _matrix.setProjection(_w, _h);
     GL11.glViewport(0, 0, _w, _h);
     _gui.resize();
+  }
+  
+  public void setCursor(CursorCallback cursor) {
+    if((_cursor = cursor) != null) {
+      Mouse.setGrabbed(true);
+    } else {
+      Mouse.setGrabbed(false);
+    }
   }
   
   public GUIs GUI() { return _gui; }
@@ -258,7 +268,12 @@ public abstract class Context {
     _matrix.translate(_cameraX, _cameraY);
     _events.raiseDraw();
     _gui.draw();
+    
     _matrix.pop();
+    
+    if(_cursor != null) {
+      _cursor.draw();
+    }
     
     Display.update();
     Display.sync(_fpsTarget);
@@ -474,5 +489,9 @@ public abstract class Context {
         }
       }
     }
+  }
+  
+  public interface CursorCallback {
+    public void draw();
   }
 }
