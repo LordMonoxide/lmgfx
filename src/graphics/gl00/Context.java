@@ -118,10 +118,12 @@ public abstract class Context {
     _gui.resize();
   }
   
-  public void setCursor(CursorCallback cursor) {
+  public void setCursor(CursorCallback cursor, int x, int y) {
     if((_cursor = cursor) != null) {
       Mouse.setGrabbed(true);
+      Mouse.setCursorPosition(x, _h - y);
     } else {
+      Mouse.setCursorPosition(x, _h - y);
       Mouse.setGrabbed(false);
     }
   }
