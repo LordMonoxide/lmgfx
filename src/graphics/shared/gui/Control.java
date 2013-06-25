@@ -49,7 +49,6 @@ public class Control<T> {
     this(gui, Theme.getInstance(), register);
   }
   
-  @SuppressWarnings("unchecked")
   public Control(GUI gui, Theme theme, boolean register) {
     _gui = gui;
     
@@ -93,7 +92,7 @@ public class Control<T> {
     return this;
   }
   
-  public ControlList Controls() {
+  public ControlList controls() {
     return _controlList;
   }
   
@@ -219,7 +218,7 @@ public class Control<T> {
       Control<?> c = _controlNext;
       if(c == null) {
         if(_controlParent != null) {
-          c = _controlParent.Controls().getLast();
+          c = _controlParent.controls().getLast();
         }
       }
       
@@ -233,7 +232,7 @@ public class Control<T> {
           c = c.getControlNext();
           if(c == null) {
             if(_controlParent != null) {
-              c = _controlParent.Controls().getLast();
+              c = _controlParent.controls().getLast();
             }
           }
         }

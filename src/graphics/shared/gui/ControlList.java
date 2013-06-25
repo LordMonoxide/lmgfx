@@ -79,7 +79,7 @@ public class ControlList {
     
     while(c != null) {
       c.setFocus(false);
-      c.Controls().killFocus();
+      c.controls().killFocus();
       c = c._controlNext;
     }
   }
