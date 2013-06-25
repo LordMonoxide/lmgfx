@@ -10,6 +10,8 @@ public abstract class GUI {
   protected Matrix _matrix = Context.getMatrix();
   protected Textures _textures = Context.getTextures();
   
+  protected boolean _loaded;
+  
   private boolean _visible = true;
   
   protected Context _context;
@@ -25,9 +27,18 @@ public abstract class GUI {
   private boolean _forceSelect;
   
   public GUI() {
+    final GUI _this = this;
+    
     _context = Context.getContext();
-    _control = new Control<Control.Events>(this);
+    _control = new Control<Control.Events>(_this);
     _control.setAcceptsFocus(false);
+    
+    _context.addLoadCallback(new Context.Loader.Callback() {
+      public void load() {
+        _this.load();
+        _loaded = true;
+      }
+    }, false);
   }
   
   public boolean getVisible() {
@@ -38,19 +49,15 @@ public abstract class GUI {
     _visible = visible;
   }
   
-  public Context getContext() {
-    return _context;
-  }
-  
   protected Control<?> getFocus() {
     return _focus;
   }
   
-  public ControlList Controls() {
-    return _control.Controls();
+  public ControlList controls() {
+    return _control.controls();
   }
   
-  public void setFocus(Control<?> control) {
+  protected void setFocus(Control<?> control) {
     if(_selectControl == _focus) _selectControl = null;
     
     if(_focus != null) {
@@ -62,23 +69,23 @@ public abstract class GUI {
     _focus = control;
   }
   
-  public void setWH(int w, int h) {
+  protected void setWH(int w, int h) {
     _control.setWH(w, h);
   }
   
-  public abstract void load();
-  public abstract void destroy();
-  public abstract void resize();
-  public abstract void draw();
-  public abstract boolean logic();
+  protected abstract void load();
+  protected abstract void destroy();
+  protected abstract void resize();
+  protected abstract void draw();
+  protected abstract boolean logic();
   
-  public final boolean logicGUI() {
+  protected final boolean logicGUI() {
     Boolean b = logic();
     _control.logicControl();
     return b;
   }
   
-  public final void drawGUI() {
+  protected final void drawGUI() {
     draw();
     drawControls();
   }
@@ -138,7 +145,7 @@ public abstract class GUI {
     return y;
   }
   
-  public final boolean mouseDown(int x, int y, int button) {
+  protected final boolean mouseDown(int x, int y, int button) {
     _selectButton = button;
     
     drawSelect();
@@ -162,7 +169,7 @@ public abstract class GUI {
     return handleMouseDown(x, y, button);
   }
   
-  public final boolean mouseUp(int x, int y, int button) {
+  protected final boolean mouseUp(int x, int y, int button) {
     _selectButton = -1;
     
     if(_selectControl != null) {
@@ -174,7 +181,7 @@ public abstract class GUI {
     return handleMouseUp(x, y, button);
   }
   
-  public final boolean mouseMove(int x, int y) {
+  protected final boolean mouseMove(int x, int y) {
     _mouseX = x;
     _mouseY = y;
     
@@ -209,7 +216,7 @@ public abstract class GUI {
     return handleMouseMove(x, y, _selectButton);
   }
   
-  public final boolean mouseWheel(int delta) {
+  protected final boolean mouseWheel(int delta) {
     drawSelect();
     
     int[] pixel = _context.getPixel(_mouseX, _mouseY);
@@ -226,7 +233,7 @@ public abstract class GUI {
     return handleMouseWheel(delta);
   }
   
-  public final boolean keyDown(int key) {
+  protected final boolean keyDown(int key) {
     if(key == Keyboard.KEY_F12) {
       _forceSelect = !_forceSelect;
       
@@ -245,7 +252,7 @@ public abstract class GUI {
     return handleKeyDown(key);
   }
   
-  public final boolean keyUp(int key) {
+  protected final boolean keyUp(int key) {
     if(_keyDownControl != null) {
       _keyDownControl.handleKeyUp(key);
     }
@@ -253,7 +260,7 @@ public abstract class GUI {
     return handleKeyUp(key);
   }
   
-  public final boolean charDown(char key) {
+  protected final boolean charDown(char key) {
     if(_focus != null) {
       _focus.handleCharDown(key);
     }
