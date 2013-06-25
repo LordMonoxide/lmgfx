@@ -1,5 +1,7 @@
 package graphics.shared.fonts;
 
+import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
+
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
@@ -7,7 +9,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import graphics.gl00.Context;
 import graphics.shared.textures.Texture;
@@ -17,122 +18,114 @@ import graphics.util.Math;
 
 public class Fonts {
   private static Fonts _instance = new Fonts();
-  
-  public static Fonts getInstance() {
-    return _instance;
-  }
+  public static Fonts getInstance() { return _instance; }
   
   private Textures _textures = Context.getTextures();
-  private HashMap<String, Font> _fonts = new HashMap<String, Font>();
+  private ConcurrentHashMapV8<String, Font> _fonts = new ConcurrentHashMapV8<String, Font>();
   
   private Font _default = getFont(Theme.getInstance().getFontName(), Theme.getInstance().getFontSize());
+  public Font getDefault() { return _default; }
   
   private Fonts() { }
   
-  public Font getDefault() {
-    return _default;
-  }
-  
-  private java.awt.Font _font;
-  private FontRenderContext _rendCont;
-  
-  private ArrayList<Metrics> _metrics;
-  
-  private int _highIndex;
-  
-  public Font getFont(String name, int size) {
-    String fullName = name + "." + size;
+  public Font getFont(final String name, final int size) {
+    final String fullName = name + "." + size;
     if(_fonts.containsKey(fullName)) {
       System.out.println("Font \"" + fullName + "\" already loaded.");
       return _fonts.get(fullName);
     }
     
-    _font = new java.awt.Font(name, 0, size);
-    _rendCont = new FontRenderContext(null, true, true);
+    final Font f = new Font();
     
-    FontMetrics fm = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE).getGraphics().getFontMetrics(_font);
-    
-    _metrics = new ArrayList<Metrics>();
-    
-    int start = 0x20;
-    int end   = 0x3FF;
-    
-    for(int i = start; i <= end; i++) {
-      addGlyph(i);
-    }
-    
-    addGlyph(0x25B2); // Triangle up
-    addGlyph(0x25BA); // Triangle right
-    addGlyph(0x25BC); // Triangle down
-    addGlyph(0x25C4); // Triangle left
-    
-    int x = 0;
-    int y = 0;
-    int w = 512;
-    int h = 512;
-    
-    Font.Glyph[] glyph = new Font.Glyph[_highIndex + 1];
-    
-    byte[] data = new byte[w * h * 4];
-    for(Metrics m : _metrics) {
-      if(x + m.w2 > w) {
-        x = 0;
-        y += m.h2;
-      }
-      
-      int i1 = (y * w * 4) + x * 4;
-      int i2 = 0;
-      
-      for(int n = 0; n < m.h; n++) {
-        System.arraycopy(m.argb, i2, data, i1, m.w * 4);
+    Context.getContext().addLoadCallback(new Context.Loader.Callback() {
+      public void load() {
+        java.awt.Font font = new java.awt.Font(name, 0, size);
+        FontRenderContext rendCont = new FontRenderContext(null, true, true);
+        FontMetrics fm = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB_PRE).getGraphics().getFontMetrics(font);
+        ArrayList<Metrics> metrics = new ArrayList<Metrics>();
         
-        i1 += w * 4;
-        i2 += m.w * 4;
+        int highIndex = 0;
+        int start = 0x20;
+        int end   = 0x3FF;
+        
+        for(int i = start; i <= end; i++) {
+          highIndex = addGlyph(i, font, rendCont, metrics, highIndex);
+        }
+        
+        highIndex = addGlyph(0x25B2, font, rendCont, metrics, highIndex); // Triangle up
+        highIndex = addGlyph(0x25BA, font, rendCont, metrics, highIndex); // Triangle right
+        highIndex = addGlyph(0x25BC, font, rendCont, metrics, highIndex); // Triangle down
+        highIndex = addGlyph(0x25C4, font, rendCont, metrics, highIndex); // Triangle left
+        
+        int x = 0;
+        int y = 0;
+        int w = 512;
+        int h = 512;
+        
+        Font.Glyph[] glyph = new Font.Glyph[highIndex + 1];
+        
+        byte[] data = new byte[w * h * 4];
+        for(Metrics m : metrics) {
+          if(x + m.w2 > w) {
+            x = 0;
+            y += m.h2;
+          }
+          
+          int i1 = (y * w * 4) + x * 4;
+          int i2 = 0;
+          
+          for(int n = 0; n < m.h; n++) {
+            System.arraycopy(m.argb, i2, data, i1, m.w * 4);
+            
+            i1 += w * 4;
+            i2 += m.w * 4;
+          }
+          
+          Font.Glyph g = new Font.Glyph();
+          g.w = fm.charWidth(m.code);
+          g.h = m.h;
+          g.tx = x;
+          g.ty = y;
+          g.tw = m.w2;
+          g.th = m.h2;
+          glyph[m.code] = g;
+          
+          x += m.w2;
+        }
+        
+        ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
+        buffer.put(data);
+        buffer.position(0);
+        
+        Texture texture = _textures.getTexture("Font." + font.getFontName() + "." + font.getSize(), w, h, buffer);
+        
+        f.load(metrics.get(0).h, glyph);
+        f.setTexture(texture);
+        _fonts.put(fullName, f);
+        
+        System.out.println("Font \"" + fullName + "\" created (" + w + "x" + h + ").");
       }
-      
-      Font.Glyph g = new Font.Glyph();
-      g.w = fm.charWidth(m.code);
-      g.h = m.h;
-      g.tx = x;
-      g.ty = y;
-      g.tw = m.w2;
-      g.th = m.h2;
-      glyph[m.code] = g;
-      
-      x += m.w2;
-    }
-    
-    ByteBuffer buffer = ByteBuffer.allocateDirect(data.length);
-    buffer.put(data);
-    buffer.position(0);
-    
-    Texture texture = _textures.getTexture("Font." + _font.getFontName() + "." + _font.getSize(), w, h, buffer);
-    
-    Font f = new Font(_metrics.get(0).h, glyph);
-    f.setTexture(texture);
-    _fonts.put(fullName, f);
-    
-    System.out.println("Font \"" + fullName + "\" created (" + w + "x" + h + ").");
+    }, false);
     
     return f;
   }
   
-  private void addGlyph(int i) {
-    if(!Character.isValidCodePoint(i)) return;
+  private int addGlyph(int i, java.awt.Font font, FontRenderContext rendCont, ArrayList<Metrics> metrics, int highIndex) {
+    if(!Character.isValidCodePoint(i)) return highIndex;
     
     char[] character = Character.toChars(i);
     
-    Rectangle2D bounds = _font.getStringBounds(character, 0, character.length, _rendCont);
+    Rectangle2D bounds = font.getStringBounds(character, 0, character.length, rendCont);
     
     if(bounds.getWidth() == 0) {
-      return;
+      return highIndex;
     }
     
     BufferedImage bi = new BufferedImage((int)bounds.getWidth(), (int)bounds.getHeight(), BufferedImage.TYPE_INT_ARGB);
     
     Graphics2D g = (Graphics2D)bi.getGraphics();
     //g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    g.setFont(_font);
+    g.setFont(font);
     g.drawString(new String(character), 0, (int)(bounds.getHeight() - bounds.getMaxY()));
     
     int[] argb = null;
@@ -150,9 +143,10 @@ public class Fonts {
     m.w2 = Math.nextPowerOfTwo(m.w);
     m.h2 = Math.nextPowerOfTwo(m.h);
     m.argb = argbByte;
-    _metrics.add(m);
+    metrics.add(m);
     
-    if(i > _highIndex) _highIndex = i;
+    if(i > highIndex) highIndex = i;
+    return highIndex;
   }
   
   private class Metrics {
