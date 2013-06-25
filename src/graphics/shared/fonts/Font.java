@@ -13,16 +13,14 @@ public class Font {
   
   private Glyph[] _glyph;
   
-  protected Font(int h, Glyph[] glyph) {
+  protected Font() { }
+  
+  protected void load(int h, Glyph[] glyph) {
     _h = h;
     _glyph = glyph;
   }
   
-  public Texture getTexture() {
-    return _texture;
-  }
-  
-  public void setTexture(Texture texture) {
+  protected void setTexture(Texture texture) {
     _texture = texture;
     
     for(int i = 0; i < _glyph.length; i++) {
