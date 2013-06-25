@@ -2,6 +2,7 @@ package graphics.gl00;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import graphics.shared.fonts.Fonts;
 import graphics.shared.gui.GUIs;
@@ -11,8 +12,6 @@ import graphics.util.Time;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Controller;
-import org.lwjgl.input.Controllers;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -20,6 +19,32 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 
 public abstract class Context {
+  public static Context create() {
+    Thread thread = new Thread(new Runnable() {
+      public void run() {
+        Context c = new graphics.gl14.Context();
+        c.setBackColour(new float[] {0, 0, 0, 0});
+        c.setTitle("Malachite");
+        c.setResizable(true);
+        c.setFPSTarget(0);
+        
+        if(c.createInternal()) {
+          c.run();
+        } else {
+          System.out.println("Could not create OpenGL.");
+        }
+      }
+    }, "OpenGL Thread");
+    thread.setPriority(Thread.MAX_PRIORITY);
+    thread.start();
+    
+    while(_context == null || !_context.running()) {
+      try { Thread.sleep(1); } catch(InterruptedException e) { }
+    }
+    
+    return _context;
+  }
+  
   protected static Context  _context;
   protected static Matrix   _matrix;
   protected static Textures _textures;
@@ -28,13 +53,10 @@ public abstract class Context {
   protected static Class<? extends Drawable> _drawable;
   protected static Class<? extends Scalable> _scalable;
   
-  private static Game  _game;
-  
   public static final Context  getContext()  { return _context;  }
   public static final Matrix   getMatrix()   { return _matrix;   }
   public static final Textures getTextures() { return _textures; }
   public static final Fonts    getFonts()    { return _fonts;    }
-  public static final Game     getGame()     { return _game;     }
   
   public static final Vertex newVertex() {
     try {
@@ -66,7 +88,8 @@ public abstract class Context {
   private Events _events = new Events();
   
   private GUIs _gui = new GUIs();
-  private ContextLogic _logic = new ContextLogic();
+  private Logic _logic = new Logic();
+  private Loader _loader = new Loader();
   
   private float _cameraX, _cameraY;
   
@@ -84,6 +107,7 @@ public abstract class Context {
   
   private int[] _selectColour = {1, 0, 0, 255};
   
+  private ConcurrentLinkedDeque<Loader.Callback> _loaderCB = new ConcurrentLinkedDeque<Loader.Callback>();
   private boolean _running;
   
   private int _fps;
@@ -109,6 +133,17 @@ public abstract class Context {
   public    void   setH(int h)               { setWH(_w, h);     }
   public    void   setFPSTarget(int fps)     { _fpsTarget = fps; }
   public    void   setBackColour(float[] c)  { _backColour = c; _backColourUpdate = true; }
+  
+  public boolean running() { return _running; }
+  public Events events() { return _events; }
+  
+  public void addLoadCallback(Loader.Callback callback, boolean inRenderThread) {
+    if(inRenderThread) {
+      _loaderCB.add(callback);
+    } else {
+      _loader.add(callback);
+    }
+  }
   
   public void setWH(int w, int h) {
     _w = w;
@@ -137,7 +172,7 @@ public abstract class Context {
   protected abstract void createDisplay() throws LWJGLException;
   protected abstract void createInstances();
   
-  public boolean create(Game game) {
+  private boolean createInternal() {
     if(!Display.isCreated()) {
       try {
         Display.setInitialBackground(_backColour[0], _backColour[1], _backColour[2]);
@@ -159,32 +194,12 @@ public abstract class Context {
     GL11.glViewport(0, 0, _w, _h);
     
     createInstances();
-    createGamepads();
     
     _matrix.setProjection(_w, _h);
-    
-    _game = game;
-    _game.init();
     
     _running = true;
     
     return true;
-  }
-  
-  private void createGamepads() {
-    try {
-      Controllers.create();
-      
-      for(int i = 0; i < Controllers.getControllerCount(); i++) {
-        Controller c = Controllers.getController(i);
-        
-        if(!c.getName().equals("USB Receiver")) {
-          System.out.println("Found controller: " + c.getName());
-        }
-      }
-    } catch(LWJGLException e) {
-      e.printStackTrace();
-    }
   }
   
   protected void cleanup() {
@@ -206,6 +221,7 @@ public abstract class Context {
     int fpsCount = 0;
     
     _logic.start();
+    _loader.start();
     
     while(_running) {
       check();
@@ -221,20 +237,21 @@ public abstract class Context {
       fpsCount++;
     }
     
+    _loader.stop();
     _logic.stop();
-    _game.destroy();
     
-    while(!_logic._finished) {
+    while(!(_logic._finished && _loader._finished)) {
       try {
         Thread.sleep(1);
       } catch(InterruptedException e) { }
     }
     
+    _events.raiseDestroy();
+    
     _gui.destroy();
     _textures.destroy();
     
     cleanup();
-    Controllers.destroy();
     Logger.printRefs();
     Display.destroy();
   }
@@ -254,7 +271,8 @@ public abstract class Context {
       _backColourUpdate = false;
     }
     
-    _textures.check();
+    Loader.Callback cb = _loaderCB.poll();
+    if(cb != null) cb.load();
   }
   
   public void clear() {
@@ -342,15 +360,21 @@ public abstract class Context {
   public static class Events {
     private Events() { }
     
-    private LinkedList<Draw>   _draw   = new LinkedList<Draw>();
-    private LinkedList<Mouse>  _mouse  = new LinkedList<Mouse>();
-    private LinkedList<Key>    _key    = new LinkedList<Key>();
-    private LinkedList<Scroll> _scroll = new LinkedList<Scroll>();
+    private LinkedList<Destroy> _destroy = new LinkedList<Destroy>();
+    private LinkedList<Draw>    _draw    = new LinkedList<Draw>();
+    private LinkedList<Mouse>   _mouse   = new LinkedList<Mouse>();
+    private LinkedList<Key>     _key     = new LinkedList<Key>();
+    private LinkedList<Scroll>  _scroll  = new LinkedList<Scroll>();
     
-    public void addDrawHandler  (Draw   e) { _draw  .add(e); }
-    public void addMouseHandler (Mouse  e) { _mouse .add(e); }
-    public void addKeyHandler   (Key    e) { _key   .add(e); }
-    public void addScrollHandler(Scroll e) { _scroll.add(e); }
+    public void addDestroyHandler(Destroy e) { _destroy.add(e); }
+    public void addDrawHandler   (Draw    e) { _draw   .add(e); }
+    public void addMouseHandler  (Mouse   e) { _mouse  .add(e); }
+    public void addKeyHandler    (Key     e) { _key    .add(e); }
+    public void addScrollHandler (Scroll  e) { _scroll .add(e); }
+    
+    private void raiseDestroy() {
+      for(Destroy e : _destroy) e.destroy();
+    }
     
     private void raiseDraw() {
       for(Draw e : _draw) e.draw();
@@ -384,6 +408,10 @@ public abstract class Context {
       for(Key e : _key) e.text(key);
     }
     
+    public static abstract class Destroy {
+      public abstract void destroy();
+    }
+    
     public static abstract class Draw {
       public abstract void draw();
     }
@@ -405,7 +433,7 @@ public abstract class Context {
     }
   }
   
-  private class ContextLogic implements Runnable {
+  private class Logic implements Runnable {
     private Thread _thread;
     
     private boolean _running;
@@ -495,6 +523,85 @@ public abstract class Context {
         }
       }
     }
+  }
+  
+  public static class Loader implements Runnable {
+    private Thread _thread;
+    
+    private boolean _running;
+    private boolean _finished;
+    
+    private int _fps;
+    
+    private ConcurrentLinkedDeque<Callback> _cb = new ConcurrentLinkedDeque<Callback>();
+    
+    public int getFPS() { return _fps; }
+    
+    public void start() {
+      if(_thread != null) return;
+      _running = true;
+      _thread = new Thread(this);
+      _thread.setPriority(Thread.MIN_PRIORITY);
+      _thread.start();
+      
+      System.out.println("Loader thread started.");
+    }
+    
+    public void stop() {
+      _running = false;
+      synchronized(_thread) {
+        _thread.notify();
+      }
+    }
+    
+    public void add(Callback cb) {
+      if(!_running) start();
+      _cb.add(cb);
+      
+      synchronized(_thread) {
+        _thread.notify();
+      }
+    }
+    
+    public void run() {
+      _fps = 120;
+      
+      double fpsTimeout   = Time.HzToTicks(1);
+      double fpsTimer     = Time.getTime() + fpsTimeout;
+      int fpsCount = 0;
+      
+      Callback cb;
+      
+      while(_running) {
+        if((cb = _cb.poll()) != null) {
+          cb.load();
+        }
+        
+        if(fpsTimer <= Time.getTime()) {
+          fpsTimer = Time.getTime() + fpsTimeout;
+          _fps = fpsCount;
+          fpsCount = 0;
+        }
+        
+        try {
+          if(_cb.size() == 0) {
+            synchronized(_thread) {
+              _thread.wait();
+            }
+          } else {
+            synchronized(_thread) {
+              _thread.wait(10);
+            }
+          }
+        } catch(InterruptedException e) { }
+      }
+      
+      _finished = true;
+      
+      System.out.println("Loader thread finished.");
+    }
+    
+    public static interface Callback { public void load(); }
   }
   
   public interface CursorCallback {
