@@ -11,7 +11,6 @@ import graphics.shared.gui.controls.Menu;
 import graphics.shared.gui.controls.Picture;
 import graphics.shared.gui.controls.Scrollbar;
 import graphics.shared.gui.controls.Textbox;
-import graphics.shared.gui.controls.Scrollbar.Orientation;
 import graphics.shared.gui.controls.compound.Window;
 import graphics.shared.textures.Textures;
 
@@ -97,7 +96,7 @@ public class Theme {
     c.setMin(0);
     c.setMax(99);
     c.setVal(0);
-    c.setOrientation(Orientation.VERTICAL);
+    c.setOrientation(Scrollbar.Orientation.VERTICAL);
     c.setWH(16, 100);
   }
   
