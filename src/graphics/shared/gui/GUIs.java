@@ -33,61 +33,61 @@ public class GUIs {
     GUI[] g = _gui.toArray(new GUI[0]);
     
     for(int i = _gui.size(); --i >= 0;) {
-      g[i].drawGUI();
+      if(g[i]._loaded) g[i].drawGUI();
     }
   }
   
   public void logic() {
     for(GUI gui : _gui) {
-      if(gui.logicGUI()) break;
+      if(gui._loaded) if(gui.logicGUI()) break;
     }
   }
   
   public void resize() {
     for(GUI gui : _gui) {
-      gui.resize();
+      if(gui._loaded) gui.resize();
     }
   }
   
   public void mouseMove(int x, int y) {
     for(GUI gui : _gui) {
-      if(gui.mouseMove(x, y)) break;
+      if(gui._loaded) if(gui.mouseMove(x, y)) break;
     }
   }
   
   public void mouseDown(int x, int y, int button) {
     for(GUI gui : _gui) {
-      if(gui.mouseDown(x, y, button)) break;
+      if(gui._loaded) if(gui.mouseDown(x, y, button)) break;
     }
   }
   
   public void mouseUp(int x, int y, int button) {
     for(GUI gui : _gui) {
-      if(gui.mouseUp(x, y, button)) break;
+      if(gui._loaded) if(gui.mouseUp(x, y, button)) break;
     }
   }
   
   public void mouseWheel(int delta) {
     for(GUI gui : _gui) {
-      if(gui.mouseWheel(delta)) break;
+      if(gui._loaded) if(gui.mouseWheel(delta)) break;
     }
   }
   
   public void keyDown(int key) {
     for(GUI gui : _gui) {
-      if(gui.keyDown(key)) break;
+      if(gui._loaded) if(gui.keyDown(key)) break;
     }
   }
   
   public void keyUp(int key) {
     for(GUI gui : _gui) {
-      if(gui.keyUp(key)) break;
+      if(gui._loaded) if(gui.keyUp(key)) break;
     }
   }
   
   public void charDown(char c) {
     for(GUI gui : _gui) {
-      if(gui.charDown(c)) break;
+      if(gui._loaded) if(gui.charDown(c)) break;
     }
   }
 }
