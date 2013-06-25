@@ -73,7 +73,7 @@ public class Menu extends Control<Menu.Events> {
     
     _drop = new MenuGUI();
     _drop.load();
-    _drop.Controls().add(_picDrop);
+    _drop.controls().add(_picDrop);
     
     setVisible(false);
     

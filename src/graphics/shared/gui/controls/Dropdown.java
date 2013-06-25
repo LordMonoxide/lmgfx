@@ -113,7 +113,7 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
       }
     });
     
-    Controls().add(_btnDrop);
+    controls().add(_btnDrop);
     
     _selected = Context.newDrawable();
     _selected.setColour(new float[] {1, 1, 1, 0.33f});
@@ -121,7 +121,7 @@ public class Dropdown extends Control<Dropdown.Events> implements Iterable<Dropd
     
     _drop = new DropdownGUI(_picDrop);
     _drop.load();
-    _drop.Controls().add(_picDrop);
+    _drop.controls().add(_picDrop);
     
     theme.create(this);
   }

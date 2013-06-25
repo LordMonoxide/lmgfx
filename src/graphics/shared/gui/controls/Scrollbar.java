@@ -49,8 +49,8 @@ public class Scrollbar extends Control<Scrollbar.Events> {
       public void clickDbl() { click(); }
     });
     
-    Controls().add(_up);
-    Controls().add(_down);
+    controls().add(_up);
+    controls().add(_down);
     
     theme.create(this);
   }

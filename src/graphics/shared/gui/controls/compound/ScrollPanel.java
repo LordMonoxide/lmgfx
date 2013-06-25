@@ -79,12 +79,12 @@ public class ScrollPanel extends Control<ScrollPanel.Events> {
     _tabs.setX(_del.getX() + _del.getW() + 4);
     _panel.setX(_scroll.getW());
     
-    super.Controls().add(_add);
-    super.Controls().add(_del);
-    super.Controls().add(_tabs);
-    super.Controls().add(_panel);
-    super.Controls().add(_scroll);
-    super.Controls().add(_num);
+    super.controls().add(_add);
+    super.controls().add(_del);
+    super.controls().add(_tabs);
+    super.controls().add(_panel);
+    super.controls().add(_scroll);
+    super.controls().add(_num);
     
     setWH(400, 100);
     
@@ -94,11 +94,11 @@ public class ScrollPanel extends Control<ScrollPanel.Events> {
   }
   
   public ControlList Buttons() {
-    return _tabs.Controls();
+    return _tabs.controls();
   }
   
-  public ControlList Controls() {
-    return _panel.Controls();
+  public ControlList controls() {
+    return _panel.controls();
   }
   
   public void add(Item item) {

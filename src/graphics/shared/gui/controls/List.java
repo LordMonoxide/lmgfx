@@ -36,7 +36,7 @@ public class List extends Control<List.ListItem.Events> {
     
     _scroll.setMax(0);
     
-    Controls().add(_scroll);
+    controls().add(_scroll);
     
     theme.create(this);
   }
