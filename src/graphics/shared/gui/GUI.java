@@ -38,7 +38,7 @@ public abstract class GUI {
         _this.load();
         _loaded = true;
       }
-    }, false);
+    }, false, "gui load");
   }
   
   public boolean getVisible() {

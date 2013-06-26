@@ -105,7 +105,7 @@ public class Fonts {
         
         System.out.println("Font \"" + fullName + "\" created (" + w + "x" + h + ").");
       }
-    }, false);
+    }, false, "font load");
     
     return f;
   }

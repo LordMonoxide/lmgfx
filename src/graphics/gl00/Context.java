@@ -137,8 +137,9 @@ public abstract class Context {
   public boolean running() { return _running; }
   public Events events() { return _events; }
   
-  public void addLoadCallback(Loader.Callback callback, boolean inRenderThread) {
+  public void addLoadCallback(Loader.Callback callback, boolean inRenderThread, String where) {
     if(inRenderThread) {
+      System.out.println("Adding GFX loader from " + where);
       _loaderCB.add(callback);
     } else {
       _loader.add(callback);

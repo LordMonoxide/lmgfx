@@ -12,31 +12,28 @@ public class Texture {
   private String _name;
   private int _id;
   private int _w, _h;
-  private ByteBuffer _data;
   
   private Events _events = new Events(this);
   private boolean _loaded, _updated;
   
-  protected Texture(String name, int w, int h, ByteBuffer data) {
+  protected Texture(String name, int w, int h, final ByteBuffer data) {
     _name = name;
     _w = w;
     _h = h;
-    _data = data;
     
     Context.getContext().addLoadCallback(new Context.Loader.Callback() {
       public void load() {
         _id = GL11.glGenTextures();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, _id);
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, _w, _h, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, _data);
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, _w, _h, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        _data = null;
         System.out.println("Loaded requested texture ID " + _id);
         _loaded = true;
         
         _events.raiseLoad();
       }
-    }, true);
+    }, true, "texture load for " + _name);
     
     Logger.addRef(Logger.LOG_TEXTURE, _name);
   }
@@ -60,7 +57,7 @@ public class Texture {
         
         _events.raiseUpdate();
       }
-    }, true);
+    }, true, "texture update for " + _name);
   }
   
   public void use() {

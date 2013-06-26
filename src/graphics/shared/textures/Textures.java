@@ -14,6 +14,8 @@ public class Textures {
   private HashMap<String, Texture> _textures = new HashMap<String, Texture>();
   private PNG _png = new PNG();
   
+  private int _lock;
+  
   public int loaded() {
     return _textures.size();
   }
@@ -23,12 +25,15 @@ public class Textures {
   public Texture getTexture(String name, int w, int h, ByteBuffer data) {
     double t = Time.getTime();
     
+    while(_lock != 0) try { Thread.sleep(1); } catch(Exception e) { }
     if(_textures.containsKey(name)) {
       return _textures.get(name);
     }
     
+    _lock++;
     Texture texture = new Texture(name, w, h, data);
     _textures.put(name, texture);
+    _lock--;
     
     System.out.println("Texture \"" + name + "\" (" + w + "x" + h +") loaded. (" + (Time.getTime() - t) + ")");
     
@@ -38,10 +43,12 @@ public class Textures {
   public Texture getTexture(String file) {
     double t = Time.getTime();
     
+    while(_lock != 0) try { Thread.sleep(1); } catch(Exception e) { }
     if(_textures.containsKey(file)) {
       return _textures.get(file);
     }
     
+    _lock++;
     System.out.println("Texture \"" + file + "\" loading to memory...");
     
     ByteBuffer data = null;
@@ -58,6 +65,8 @@ public class Textures {
     
     Texture texture = new Texture(file, _png.getW(), _png.getH(), data);
     _textures.put(file, texture);
+    
+    _lock--;
     
     System.out.println("Texture \"" + file + "\" (" + _png.getW() + "x" + _png.getH() +") loaded. (" + (Time.getTime() - t) + ")");
     
