@@ -268,11 +268,11 @@ public abstract class GUI {
     return handleCharDown(key);
   }
   
-  public boolean handleMouseDown (int x, int y, int button) { return false; }
-  public boolean handleMouseUp   (int x, int y, int button) { return false; }
-  public boolean handleMouseMove (int x, int y, int button) { return false; }
-  public boolean handleMouseWheel(int delta)                { return false; }
-  public boolean handleKeyDown   (int key)  { return false; }
-  public boolean handleKeyUp     (int key)  { return false; }
-  public boolean handleCharDown  (char key) { return false; }
+  protected boolean handleMouseDown (int x, int y, int button) { return false; }
+  protected boolean handleMouseUp   (int x, int y, int button) { return false; }
+  protected boolean handleMouseMove (int x, int y, int button) { return false; }
+  protected boolean handleMouseWheel(int delta)                { return false; }
+  protected boolean handleKeyDown   (int key)  { return false; }
+  protected boolean handleKeyUp     (int key)  { return false; }
+  protected boolean handleCharDown  (char key) { return false; }
 }
