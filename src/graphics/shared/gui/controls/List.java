@@ -102,6 +102,10 @@ public class List extends Control<List.ListItem.Events> {
     _scroll.setMax(_scroll.getMax() - 1);
   }
   
+  public ListItem[] items() {
+    return _items.toArray(new ListItem[_items.size()]);
+  }
+  
   public void draw() {
     if(drawBegin()) {
       switch(_items.size()) {
