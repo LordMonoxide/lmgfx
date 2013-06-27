@@ -57,9 +57,11 @@ public class Textures {
       data = _png.load(file);
     } catch(FileNotFoundException e) {
       System.err.println("Couldn't find texture \"" + file + "\"");
+      _lock--;
       return null;
     } catch(IOException e) {
       e.printStackTrace();
+      _lock--;
       return null;
     }
     
