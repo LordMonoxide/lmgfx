@@ -26,7 +26,7 @@ public abstract class Context {
         c.setBackColour(new float[] {0, 0, 0, 0});
         c.setTitle("Malachite");
         c.setResizable(true);
-        c.setFPSTarget(0);
+        c.setFPSTarget(60);
         
         if(c.createInternal()) {
           c.run();
