@@ -22,17 +22,36 @@ public abstract class Context {
   public static Context create() {
     Thread thread = new Thread(new Runnable() {
       public void run() {
-        Context c = new graphics.gl14.Context();
-        c.setBackColour(new float[] {0, 0, 0, 0});
-        c.setTitle("Malachite");
-        c.setResizable(true);
-        c.setFPSTarget(60);
+        float[] col = new float[] {0, 0, 0, 0};
+        String title = "Malachite";
+        boolean resizable = true;
+        int fps = 60;
         
-        if(c.createInternal()) {
-          c.run();
-        } else {
-          System.out.println("Could not create OpenGL.");
+        Context c = null;
+        
+        /*c = new graphics.gl32.Context();
+        c.setBackColour(col);
+        c.setTitle(title);
+        c.setResizable(true);
+        c.setFPSTarget(fps);*/
+        
+        if(c == null || !c.createInternal()) {
+          System.out.println("Couldn't create OpenGL 3.2, trying 1.4...");
+          
+          c = new graphics.gl14.Context();
+          c.setBackColour(col);
+          c.setTitle(title);
+          c.setResizable(resizable);
+          c.setFPSTarget(fps);
+          
+          if(!c.createInternal()) {
+            System.out.println("Could not create OpenGL.");
+            return;
+          }
         }
+        
+        c.run();
+        
       }
     }, "OpenGL Thread");
     thread.setPriority(Thread.MAX_PRIORITY);
@@ -91,6 +110,8 @@ public abstract class Context {
   private Logic _logic = new Logic();
   private Loader _loader = new Loader();
   
+  private Thread _loaderThread, _renderThread;
+  
   private float _cameraX, _cameraY;
   
   private int _mouseX = 0;
@@ -137,12 +158,19 @@ public abstract class Context {
   public boolean running() { return _running; }
   public Events events() { return _events; }
   
-  public void addLoadCallback(Loader.Callback callback, boolean inRenderThread, String where) {
+  public void addLoadCallback(Loader.Callback callback, boolean inRenderThread) {
     if(inRenderThread) {
-      System.out.println("Adding GFX loader from " + where);
-      _loaderCB.add(callback);
+      if(Thread.currentThread() == _renderThread) {
+        callback.load();
+      } else {
+        _loaderCB.add(callback);
+      }
     } else {
-      _loader.add(callback);
+      if(Thread.currentThread() == _loaderThread) {
+        callback.load();
+      } else {
+        _loader.add(callback);
+      }
     }
   }
   
@@ -197,6 +225,9 @@ public abstract class Context {
     createInstances();
     
     _matrix.setProjection(_w, _h);
+    
+    _renderThread = Thread.currentThread();
+    _loaderThread = _loader._thread;
     
     _running = true;
     
