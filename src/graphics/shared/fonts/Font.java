@@ -54,6 +54,7 @@ public class Font {
   
   public void draw(int x, int y, String text, float[] c, int mask) {
     if(text == null) return;
+    if(_glyph == null) return;
     
     _matrix.push();
     _matrix.translate(x, y);
