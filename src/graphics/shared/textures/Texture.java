@@ -33,7 +33,7 @@ public class Texture {
         
         _events.raiseLoad();
       }
-    }, true, "texture load for " + _name);
+    }, true);
     
     Logger.addRef(Logger.LOG_TEXTURE, _name);
   }
@@ -57,7 +57,7 @@ public class Texture {
         
         _events.raiseUpdate();
       }
-    }, true, "texture update for " + _name);
+    }, true);
   }
   
   public void use() {
