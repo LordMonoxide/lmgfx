@@ -134,9 +134,9 @@ public class Control<T> {
   public void setX(float x)                         { _loc[0] = x; }
   public void setY(float y)                         { _loc[1] = y; }
   public void setEnabled(boolean enabled)           { _enabled = enabled; }
-  public void setBackColour(float[] c)              { _background.setColour(c); _background.createQuad(); }
+  public void setBackColour(float[] c)              { _background.setColour(c); if(_background.getColour() != null) _background.createQuad(); }
   public void setForeColour(float[] c)              { _foreColour = c; }
-  public void setBorderColour(float[] c)            { _border.setColour(c); _border.createBorder(); }
+  public void setBorderColour(float[] c)            { _border.setColour(c); if(_border.getColour() != null) _border.createBorder(); }
   public void setAcceptsFocus(boolean acceptsFocus) { _acceptsFocus = acceptsFocus; }
   
   public void setXY(float x, float y) {
@@ -180,10 +180,10 @@ public class Control<T> {
     }
     
     _border.setWH(_loc[2] - _border.getX() * 2, _loc[3] - _border.getY() * 2);
-    _border.createBorder();
+    if(_border.getColour() != null) _border.createBorder();
     
     _background.setWH(_loc[2] - _background.getX() * 2, _loc[3] - _background.getY() * 2);
-    _background.createQuad();
+    if(_background.getColour() != null) _background.createQuad();
     
     resize();
   }

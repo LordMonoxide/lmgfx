@@ -17,7 +17,9 @@ public class Picture extends Control<Control.Events> {
   
   protected void resize() {
     _background.setWH(_loc[2], _loc[3]);
-    _background.createQuad();
+    if(_background.getColour() != null) {
+      _background.createQuad();
+    }
   }
   
   public Texture getTexture() {
