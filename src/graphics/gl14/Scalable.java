@@ -84,8 +84,8 @@ public class Scalable extends graphics.gl00.Scalable {
     for(int n = 0; n < border.length; n++) {
       Vertex[] v = Vertex.createQuad(border[n], borderS[n], _col);
       _vertex[i++] = v[0];
-      _vertex[i++] = v[1];
       _vertex[i++] = v[2];
+      _vertex[i++] = v[1];
       _vertex[i++] = v[3];
     }
   }
